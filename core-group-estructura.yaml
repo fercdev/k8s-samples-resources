@@ -1,0 +1,5 @@
+apiVersion: api/v1
+kind: Pod
+metadata:
+  name: nombre-recurso-example
+spec:
