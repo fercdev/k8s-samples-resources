@@ -1,0 +1,71 @@
+# 1 - namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nginx-demo
+---
+#2- configMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: nginx-demo
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>NGINX-K8s</title>
+    </head>
+    <body>
+        <h1>HELLO WORLD CUSTOM DESDE NGINX-K8S</h1>
+    </body>
+    </html>
+---
+#3 deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: nginx-demo
+  labels:
+    app: nginx
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec: 
+      containers:
+      - name: nginx-container
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: html-config
+          mountPath: /usr/share/nginx/html
+      volumes:
+      - name: html-config
+        configMap:
+          name: nginx-config
+---
+#4 service
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  namespace: nginx-demo
+spec:
+  selector:
+    app: nginx
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30081
